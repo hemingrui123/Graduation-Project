@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head th:replace="_fragments :: head(~{::title})">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分类页面</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/semantic-ui/2.2.4/semantic.min.css">
+    <link rel="stylesheet" href="../static/css/me.css">
+</head>
+<body>
+
+<!--导航-->
+<nav th:replace="_fragments :: menu(2)"
+     class="ui inverted attached segment m-padded-tb-mini m-shadow-small">
+</nav>
+
+<!--中间内容-->
+<div class="m-container-small m-padded-tb-big animated fadeIn" style="min-height: 85%">
+    <div class="ui container">
+        <!--header-->
+        <div class="ui top attached segment">
+            <div class="ui middle aligned two column grid">
+                <div class="column">
+                    <h3 class="ui teal header">分类</h3>
+                </div>
+                <div class="right aligned column">
+                    共 <h2 class="ui orange header m-inline-block m-text-thin"
+                          th:text="${#arrays.length(types)}">14</h2> 个
+                </div>
+            </div>
+        </div>
+        <!--分类框-->
+        <div class="ui attached segment m-padded-tb-large">
+            <div class="ui labeled button m-margin-tb-tiny" th:each="type : ${types}">
+                <a href="#" th:href="@{/types/{id}(id=${type.typeId})}" class="ui basic  button"
+                   th:classappend="${type.typeId==activeTypeId} ? 'teal'"
+                   th:text="${type.typeName}">思考与感悟</a>
+                <div class="ui basic  left pointing label"
+                     th:classappend="${type.typeId==activeTypeId} ? 'teal'"
+                     th:text="${type.blogNums}">24
+                </div>
+            </div>
+        </div>
+
+        <!--博客列表-->
+        <div class="ui top attached teal segment">
+            <div class="ui padded vertical segment m-padded-tb-large"
+                 th:each="blog : ${page.list}">
+                <div class="ui middle aligned mobile reversed stackable grid">
+                    <div class="eleven wide column">
+                        <h3 class="ui header"><a href="#" th:href="@{/blog/{id}(id=${blog.blogId})}"
+                                                 target="_blank" class="m-black"
+                                                 th:text="${blog.blogTitle}"></a></h3>
+                        <p class="m-text" th:text="|${blog.blogDesc}......|">
+                         </p>
+                        <div class="ui grid">
+                            <div class="eleven wide column">
+                                <div class="ui mini horizontal link list">
+                                    <div class="item">
+                                        <img src="https://unsplash.it/100/100?image=1005"
+                                             th:src="@{${blog.headPortrait}}" alt=""
+                                             class="ui avatar image">
+                                        <div class="content"><a href="#" class="header"
+                                                                th:text="${blog.nickname}"></a>
+                                        </div>
+                                    </div>
+                                    <div class="item" title="发布时间">
+                                        <i class="calendar icon"></i><span
+                                            th:text="${#dates.format(blog.updateTime,'yyyy-MM-dd')}"></span>
+                                    </div>
+                                    <div class="item" title="浏览数">
+                                        <i class="eye icon"></i> <span
+                                            th:text="${blog.blogViews}"></span>
+                                    </div>
+                                    <a class="item" title="查看评论" target="_blank"
+                                         th:href="@{/blog/{id}#comment-form(id=${blog.blogId})}">
+                                        <i class="comment icon"></i><span
+                                            th:text="${blog.blogComments}">50</span>
+                                    </a>
+                                    <a class="item" title="点赞"
+                                         th:unless="${blog.flag}"
+                                         th:onclick="|javascript:thumbsUp('${blog.blogId}',this)|">
+                                        <i class="thumbs up outline icon"></i>
+                                        <span th:text="${blog.blogLikes}">15</span>
+                                    </a>
+                                    <a class="item" title="取消点赞"
+                                         th:if="${blog.flag}"
+                                         th:onclick="|javascript:thumbsUp('${blog.blogId}',this)|">
+                                        <i class="thumbs up teal icon"></i>
+                                        <span th:text="${blog.blogLikes}">15</span>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="right aligned five wide column">
+                                <a href="#" th:href="@{/types/{id}(id=${blog.typeId})}"
+                                   class="ui teal basic label m-padded-tiny m-text-thin"
+                                   th:text="${typeMap[__${blog.typeId}__]}">认知升级</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="five wide column">
+                        <a href="#" th:href="@{/blog/{id}(id=${blog.blogId})}" target="_blank">
+                            <img src="https://unsplash.it/800/450?image=1005"
+                                 th:src="@{${blog.firstPictureAddr}}" alt="" class="ui rounded image">
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!--分页组件-->
+        <div class="ui attached center aligned segment">
+            <div class="ui pagination stackable menu">
+                <a class="item" th:classappend="${page.isFirstPage} ? 'active teal'"
+                   th:href="@{'/types/'+${activeTypeId}(pageNum=${page.navigateFirstPage})}">
+                    首页
+                </a>
+                <a class="item" th:unless="${page.isFirstPage}"
+                   th:href="@{'/types/'+${activeTypeId}(pageNum=${page.prePage})}">
+                    上一页
+                </a>
+                <a class="item">
+                    第<h3 class="ui orange header m-inline-block m-text-thin"
+                         th:text="${page.getPageNum()}">8</h3>页
+                </a>
+                <a class="item" th:unless="${page.isLastPage}"
+                   th:href="@{'/types/'+${activeTypeId}(pageNum=${page.nextPage})}">
+                    下一页
+                </a>
+                <a class="item" th:classappend="${page.isLastPage} ? 'active teal'"
+                   th:href="@{'/types/'+${activeTypeId}(pageNum=${page.navigateLastPage})}">
+                    尾页
+                </a>
+                <a class="item">
+                    共<h3 class="ui red header m-inline-block m-text-thin"
+                         th:text="${page.pages}">8</h3>页
+                </a>
+                <a class="item">
+                    共<h3 class="ui red header m-inline-block m-text-thin"
+                         th:text="${page.total}">8</h3>条数据
+                </a>
+                <form name="page" class="right item" action="#" th:action="@{'/types/'+${activeTypeId}}"
+                      method="get" target="_blank">
+                    <div class="ui right labeled input">
+                        <div class="ui basic label">Go</div>
+                        <input type="text" name="pageNum" placeholder="页码..." style="width: 80px;">
+                        <div class="ui basic label">页</div>
+                        <button class="ui icon button"><i onclick="document.forms['page'].submit()"
+                                                          class="right arrow icon"></i></button>
+                    </div>
+                </form>
+            </div>
+            <input type="hidden" id="first" th:value="${page.getPageNum()}"/>
+            <input type="hidden" id="last" th:value="${page.pages}"/>
+        </div>
+    </div>
+</div>
+
+<!--底部footer-->
+<footer th:replace="_fragments :: footer" class="ui inverted vertical segment m-padded-tb-massive">
+</footer>
+<!--/*/<th:block th:replace="_fragments :: script">/*/-->
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.2/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/semantic-ui/2.2.4/semantic.min.js"></script>
+<!--/*/</th:block>/*/-->
+<script>
+    <!--移动端点击图标显示导航-->
+    $('.menu.toggle').click(
+        function () {
+            $('.m-item').toggleClass('m-mobile-hide');
+        }
+    );
+
+    //鼠标悬停头像弹出菜单
+    $('.ui.dropdown').dropdown({
+        on : 'hover'
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<!--头部-->
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:replace="${title}">博客</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/semantic-ui/2.2.4/semantic.min.css">
+    <link rel="stylesheet" href="../static/css/typo.css" th:href="@{/css/typo.css}">
+    <link rel="stylesheet" href="../static/css/animate.css" th:href="@{/css/animate.css}">
+    <link rel="stylesheet" href="../static/lib/prism/prism.css" th:href="@{/lib/prism/prism.css}">
+    <link rel="stylesheet" href="../static/lib/tocbot/tocbot.css"
+          th:href="@{/lib/tocbot/tocbot.css}">
+    <link rel="stylesheet" href="../static/css/me.css" th:href="@{/css/me.css}">
+</head>
+<body>
+<!--导航-->
+<nav th:fragment="menu(n)" class="ui inverted attached segment m-padded-tb-mini m-shadow-small">
+    <div class="ui container">
+        <div class="ui inverted secondary stackable menu">
+            <h2 class="ui teal header item">Blog</h2>
+            <a href="#" th:href="@{/}" class="m-item item m-mobile-hide"
+               th:classappend="${n==1} ? 'active'"><i
+                    class="mini home icon"></i>&nbsp;首页</a>
+            <a href="#" th:href="@{/types/-1}" class="m-item item m-mobile-hide"
+               th:classappend="${n==2} ? 'active'"><i
+                    class="mini idea icon"></i>&nbsp;分类</a>
+            <a href="#" th:href="@{/tags/-1}" class="m-item item m-mobile-hide"
+               th:classappend="${n==3} ? 'active'"><i
+                    class="mini tags icon"></i>&nbsp;标签</a>
+            <a href="#" th:href="@{/archives}" class="m-item item m-mobile-hide"
+               th:classappend="${n==4} ? 'active'"><i
+                    class="mini clone icon"></i>&nbsp;归档</a>
+            <a href="#" th:href="@{/toMessagePage}" class="m-item item m-mobile-hide"
+               th:classappend="${n==5} ? 'active'"><i
+                    class="mini envelope icon"></i>&nbsp;留言</a>
+            <a href="#" th:href="@{/toAnncPage}" class="m-item item m-mobile-hide"
+               th:classappend="${n==6} ? 'active'"><i
+                    class="mini bullhorn icon"></i>&nbsp;本站公告</a>
+          
+            <div class="right m-item m-mobile-hide item" th:if="${session.user==null}">
+                <a href="#" th:href="@{/user/toLoginPage(path=${#httpServletRequest.getRequestURL()})}"
+                   style="display:inline-block; width:80px; text-align:center"
+                >用户登录</a>·
+                <a href="#" th:href="@{/admin/toAdminLoginPage(path=${#httpServletRequest.getRequestURL()})}"
+                   style="display:inline-block; width:80px; text-align:center"
+                >博主登录</a>·
+                <a href="#" th:href="@{/user/toRegisterPage}"
+                   style="display:inline-block; width:80px; text-align:center">注册</a>
+            </div>
+            <div class="right m-item m-mobile-hide menu" th:unless=="${session.user==null}">
+                <div class="ui dropdown item">
+                    <div class="text">
+                        <img class="ui avatar image" th:src="@{${session.user.headPortrait}}"
+                             src="https://unsplash.it/100/100?image=1005">
+                        <span th:text="${session.user.nickname}"></span>
+                    </div>
+                    <i class="dropdown icon"></i>
+                    <div class="menu">
+                        <a href="#" th:href="@{/user}" class="item">个人中心</a>
+                        <a href="#" th:href="@{/user/logout}" class="item">注销</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a href="#" class="ui menu toggle black icon button m-right-top m-mobile-show">
+        <i class="sidebar icon"></i>
+    </a>
+</nav>
+
+<!--底部footer-->
+<footer th:fragment="footer" class="ui inverted vertical segment m-padded-tb-default">
+    <div class="ui center aligned container">
+        <p class="m-text-thin m-text-spaced m-opacity-tiny" style="font-size: small">
+            <span id="htmer_time" style="color: #17fd40;font-size: small;font-weight: bolder"></span>
+             </p>
+    </div>
+</footer>
+
+<!--js引用脚本-->
+<th:block th:fragment="script">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.2/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/semantic-ui/2.2.4/semantic.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/jquery.scrollto@2.1.2/jquery.scrollTo.min.js"></script>
+    <script src="../static/lib/prism/prism.js" th:src="@{/lib/prism/prism.js}"></script>
+    <script src="../static/lib/tocbot/tocbot.min.js" th:src="@{/lib/tocbot/tocbot.min.js}"></script>
+    <script src="../static/lib/qrcode/qrcode.min.js" th:src="@{/lib/qrcode/qrcode.min.js}"></script>
+    <script src="../static/lib/waypoints/jquery.waypoints.min.js"
+            th:src="@{/lib/waypoints/jquery.waypoints.min.js}"></script>
+    <script src="../../static/lib/editormd/editormd.min.js"
+            th:src="@{/lib/editormd/editormd.min.js}"></script>
+    <script>
+        $('#newblog-container').load(/*[[@{/footer/newblog}]]*/"/footer/newblog");
+    </script>
+    <script>
+        $('.ui.dropdown').dropdown({
+            on: 'hover'
+        });
+    </script>
+    <!--记录网站运行时间-->
+    <script>
+        function secondToDate(second) {
+            if (!second) {
+                return 0;
+            }
+            var time = new Array(0, 0, 0, 0, 0);
+            if (second >= 365 * 24 * 3600) {
+                time[0] = parseInt(second / (365 * 24 * 3600));
+                second %= 365 * 24 * 3600;
+            }
+            if (second >= 24 * 3600) {
+                time[1] = parseInt(second / (24 * 3600));
+                second %= 24 * 3600;
+            }
+            if (second >= 3600) {
+                time[2] = parseInt(second / 3600);
+                second %= 3600;
+            }
+            if (second >= 60) {
+                time[3] = parseInt(second / 60);
+                second %= 60;
+            }
+            if (second > 0) {
+                time[4] = second;
+            }
+            return time;
+        }
+
+        function setTime() {
+            /*此处为网站的创建时间*/
+            var create_time = Math.round(new Date(Date.UTC(2020, 2, 1, 0, 0, 0)).getTime() / 1000);
+            var timestamp = Math.round((new Date().getTime() + 8 * 60 * 60 * 1000) / 1000);
+            currentTime = secondToDate((timestamp - create_time));
+            currentTimeHtml = '本站已运行：' + currentTime[0] + '年' + currentTime[1] + '天'
+                + currentTime[2] + '时' + currentTime[3] + '分' + currentTime[4]
+                + '秒';
+            document.getElementById("htmer_time").innerHTML = currentTimeHtml;
+        }
+
+        setInterval(setTime, 1000);
+    </script>
+    <script>
+        //点赞/取消点赞
+        function thumbsUp(blogId,obj) {
+            var title=$(obj).attr('title');
+            var flag=(title=="点赞");
+            $.ajax({
+                url: "/thumbsUp",    //请求的url地址
+                async: false,//请求是否异步，默认为异步，这也是ajax重要特性
+                data: {
+                    "blogId": blogId,
+                    "flag":flag
+                },    //参数值
+                type: "post",   //请求方式
+                success: function (data) {
+                    if(data=="success"){
+                        if(flag==true){
+                            $(obj).find('i').attr('class','thumbs up teal icon');
+                            $(obj).attr('title','取消点赞');
+                            var text=$(obj).find('span').text()*1+1;
+                            $(obj).find('span').html(text);
+                        }else{
+                            $(obj).find('i').attr('class','thumbs up outline icon');
+                            $(obj).attr('title','点赞');
+                            var text=$(obj).find('span').text()*1-1;
+                            $(obj).find('span').html(text);
+                        }
+                    }else if(data=="toLogin"){
+                        alert("您需要登录才能点赞！");
+                    }else{
+                        alert("系统错误！")
+                    }
+                }
+            });
+        }
+    </script>
+</th:block>
+</body>
+</html>
